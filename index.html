@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>理財目標規劃師 — PV / FV / PMT 智能分析</title>
+  <meta name="description" content="實用的理財計算工具，運用 PV、FV、PMT 公式協助你設定理財目標、分析達成率並取得個人化建議。">
+  <!-- v1.4: widen container to 1500px, remove overflow clipping, 260px min KPI -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Spectral:wght@400;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/css/style.css">
+  <script src="https://cdn.jsdelivr.net/npm/echarts@5/dist/echarts.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@1/dist/umd/lucide.min.js"></script>
+</head>
+<body>
+
+  <!-- 導覽列 -->
+  <nav class="navbar">
+    <div class="container navbar-inner">
+      <div class="brand">
+        <span class="brand-mark">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+        </span>
+        理財目標規劃師
+      </div>
+      <ul class="nav-links">
+        <li><a href="#goal" class="active" data-nav="goal">目標規劃</a></li>
+        <li><a href="#fv" data-nav="fv">FV 終值</a></li>
+        <li><a href="#pv" data-nav="pv">PV 現值</a></li>
+        <li><a href="#pmt" data-nav="pmt">PMT 付款</a></li>
+        <li><a href="#formula" data-nav="formula">公式說明</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <header class="hero container">
+    <span class="eyebrow">PV · FV · PMT 智能理財</span>
+    <h1>讓每一分錢，<br>都朝<span class="gradient-text">你的目標</span>前進</h1>
+    <p>設定你的理財目標，輸入現有儲蓄與每月可投入金額，系統立即計算預估終值、達成率，並提供個人化調整建議。</p>
+    <div class="hero-cta">
+      <a href="#goal" class="btn btn-primary" data-nav="goal">
+        <i data-lucide="target"></i>開始規劃目標
+      </a>
+      <a href="#formula" class="btn btn-secondary" data-nav="formula">
+        <i data-lucide="book-open"></i>了解計算公式
+      </a>
+    </div>
+  </header>
+
+  <!-- 主內容 -->
+  <main class="container section" style="padding-top:0;">
+
+    <!-- 頁籤 -->
+    <div class="tabs" role="tablist">
+      <button class="tab-btn active" data-tab="goal" role="tab">
+        <i data-lucide="target"></i>理財目標規劃
+      </button>
+      <button class="tab-btn" data-tab="fv" role="tab">
+        <i data-lucide="trending-up"></i>FV 終值計算
+      </button>
+      <button class="tab-btn" data-tab="pv" role="tab">
+        <i data-lucide="coins"></i>PV 現值計算
+      </button>
+      <button class="tab-btn" data-tab="pmt" role="tab">
+        <i data-lucide="calendar-check"></i>PMT 每期付款
+      </button>
+      <button class="tab-btn" data-tab="formula" role="tab">
+        <i data-lucide="sigma"></i>公式說明
+      </button>
+    </div>
+
+    <!-- ============ 面板 1：理財目標規劃 ============ -->
+    <section class="tab-panel active" id="panel-goal">
+      <div class="grid-2">
+        <!-- 左：輸入 -->
+        <div class="card">
+          <div class="card-title"><i data-lucide="target"></i>設定你的理財目標</div>
+          <p class="card-desc">選擇目標類型並輸入參數，右側立即顯示分析結果與建議。</p>
+
+          <div class="goal-chips" id="goalChips">
+            <button class="goal-chip active" data-goal="house" data-amount="5000000" data-years="10">
+              <i data-lucide="home"></i>購屋頭期款
+            </button>
+            <button class="goal-chip" data-goal="retire" data-amount="10000000" data-years="25">
+              <i data-lucide="palm-tree"></i>退休生活
+            </button>
+            <button class="goal-chip" data-goal="edu" data-amount="2000000" data-years="8">
+              <i data-lucide="graduation-cap"></i>子女教育金
+            </button>
+            <button class="goal-chip" data-goal="travel" data-amount="300000" data-years="3">
+              <i data-lucide="plane"></i>環遊世界
+            </button>
+            <button class="goal-chip" data-goal="emergency" data-amount="500000" data-years="2">
+              <i data-lucide="shield-check"></i>緊急預備金
+            </button>
+            <button class="goal-chip" data-goal="custom" data-amount="1000000" data-years="5">
+              <i data-lucide="pencil"></i>自訂目標
+            </button>
+          </div>
+
+          <div class="form-group">
+            <label>目標金額（NT$）</label>
+            <div class="input-wrap"><input type="number" id="g_goal" value="5000000" min="0" step="10000" placeholder="請輸入目標金額">
+            </div>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>現有儲蓄（NT$）</label>
+              <div class="input-wrap"><input type="number" id="g_pv" value="500000" min="0" step="10000" placeholder="現有儲蓄，無則填 0">
+              </div>
+            </div>
+            <div class="form-group">
+              <label>每月可投入（NT$）</label>
+              <div class="input-wrap"><input type="number" id="g_pmt" value="20000" min="0" step="1000" placeholder="每月可投入金額">
+              </div>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>預期年化報酬率：<span class="range-value" id="g_rate_val">5.0%</span></label>
+            <input type="range" id="g_rate" min="0" max="15" step="0.5" value="5">
+          </div>
+
+          <div class="form-group">
+            <label>達成期限：<span class="range-value" id="g_years_val">10 年</span></label>
+            <input type="range" id="g_years" min="1" max="40" step="1" value="10">
+          </div>
+
+          <div class="formula-box">
+            <strong>計算邏輯：</strong>預估終值 = 現值複利成長 + 每月投入年金終值<br>
+            <code>FV = PV×(1+r)^n + PMT×[(1+r)^n − 1] / r</code>（每月複利）
+          </div>
+        </div>
+
+        <!-- 右：分析結果 -->
+        <div class="card">
+          <div class="card-title"><i data-lucide="bar-chart-3"></i>目標分析結果</div>
+          <p class="card-desc">即時計算，隨參數變動自動更新。</p>
+
+          <div style="display:flex;align-items:center;gap:12px;margin-bottom:14px;">
+            <span class="badge good" id="g_status_badge">
+              <i data-lucide="check-circle-2" style="width:14px;height:14px;"></i>
+              <span id="g_status_text">可達成</span>
+            </span>
+            <span style="font-size:0.82rem;color:var(--muted);" id="g_achievement_text">達成率 100%</span>
+          </div>
+
+          <div class="kpi-row">
+            <div class="kpi-card">
+              <div class="kpi-label">預估終值</div>
+              <div class="kpi-value gold" id="g_proj_fv">NT$0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">目標缺口</div>
+              <div class="kpi-value good" id="g_gap">NT$0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">累計投入</div>
+              <div class="kpi-value" id="g_contrib">NT$0</div>
+            </div>
+            <div class="kpi-card">
+              <div class="kpi-label">累計利息</div>
+              <div class="kpi-value" id="g_interest">NT$0</div>
+            </div>
+          </div>
+
+          <div class="progress-wrap">
+            <div class="progress-bar"><div class="progress-fill" id="g_progress"></div></div>
+            <div class="progress-meta">
+              <span>0</span>
+              <span id="g_progress_label">目標 NT$5,000,000</span>
+            </div>
+          </div>
+
+          <h4 style="font-size:0.95rem;margin:18px 0 4px;display:flex;align-items:center;gap:8px;">
+            <i data-lucide="lightbulb" style="width:18px;height:18px;color:var(--accent);"></i>個人化建議
+          </h4>
+          <div class="suggestion-list" id="g_suggestions"></div>
+        </div>
+      </div>
+
+      <!-- 圖表區 -->
+      <div class="grid-2" style="margin-top:24px;">
+        <div class="card">
+          <div class="card-title"><i data-lucide="line-chart"></i>資產成長軌跡</div>
+          <p class="card-desc">本金投入與利息累積的變化（每年）。</p>
+          <div class="chart-box" id="chart_growth"></div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="layers"></i>三種報酬情境比較</div>
+          <p class="card-desc">保守 2% / 穩健 5% / 積極 8% 下的預估終值。</p>
+          <div class="chart-box" id="chart_scenario"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 面板 2：FV 終值計算 ============ -->
+    <section class="tab-panel" id="panel-fv">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i data-lucide="trending-up"></i>FV 終值計算</div>
+          <p class="card-desc">已知現值與每期投入，計算 N 年後的終值。</p>
+          <div class="form-row">
+            <div class="form-group">
+              <label>現值 PV（目前投入）</label>
+              <div class="input-wrap"><input type="number" id="fv_pv" value="100000" min="0" placeholder="目前投入，無則填 0"></div>
+            </div>
+            <div class="form-group">
+              <label>每期投入 PMT</label>
+              <div class="input-wrap"><input type="number" id="fv_pmt" value="5000" min="0" placeholder="每期投入，無則填 0"></div>
+            </div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>年利率：<span class="range-value" id="fv_rate_val">5.0%</span></label>
+              <input type="range" id="fv_rate" min="0" max="20" step="0.5" value="5">
+            </div>
+            <div class="form-group">
+              <label>期數：<span class="range-value" id="fv_years_val">10 年</span></label>
+              <input type="range" id="fv_years" min="1" max="40" step="1" value="10">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>投入頻率</label>
+            <select id="fv_ppy">
+              <option value="12" selected>每月</option>
+              <option value="4">每季</option>
+              <option value="1">每年</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label style="display:flex;align-items:center;gap:8px;cursor:pointer;">
+              <input type="checkbox" id="fv_begin" style="width:auto;"> 每期期初投入（預設為期末）
+            </label>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="calculator"></i>計算結果</div>
+          <div class="result-panel">
+            <div class="result-label">N 年後預估終值 FV</div>
+            <div class="result-big" id="fv_result">NT$0</div>
+            <div class="result-grid">
+              <div class="result-item"><div class="val" id="fv_contrib">NT$0</div><div class="lbl">累計投入本金</div></div>
+              <div class="result-item"><div class="val positive" id="fv_interest">NT$0</div><div class="lbl">累計利息收益</div></div>
+              <div class="result-item"><div class="val" id="fv_multiple">0x</div><div class="lbl">本金倍數</div></div>
+            </div>
+          </div>
+          <div class="chart-box chart-box-sm" id="chart_fv"></div>
+          <div class="formula-box">
+            <strong>FV 公式：</strong><br>
+            <code>FV = PV×(1+r)^n + PMT×[(1+r)^n − 1] / r</code><br>
+            r = 每期利率，n = 總期數。期初投入時年金部分再乘 <code>(1+r)</code>。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 面板 3：PV 現值計算 ============ -->
+    <section class="tab-panel" id="panel-pv">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i data-lucide="coins"></i>PV 現值計算</div>
+          <p class="card-desc">已知未來目標金額，回推現在應一次性投入多少。</p>
+          <div class="form-group">
+            <label>未來目標金額 FV</label>
+            <div class="input-wrap"><input type="number" id="pv_fv" value="3000000" min="0" placeholder="未來目標金額"></div>
+          </div>
+          <div class="form-group">
+            <label>若同時每期投入 PMT（可填 0）</label>
+            <div class="input-wrap"><input type="number" id="pv_pmt" value="0" min="0" placeholder="每期投入，可為 0"></div>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label>年利率：<span class="range-value" id="pv_rate_val">5.0%</span></label>
+              <input type="range" id="pv_rate" min="0" max="20" step="0.5" value="5">
+            </div>
+            <div class="form-group">
+              <label>期數：<span class="range-value" id="pv_years_val">10 年</span></label>
+              <input type="range" id="pv_years" min="1" max="40" step="1" value="10">
+            </div>
+          </div>
+          <div class="form-group">
+            <label>投入頻率</label>
+            <select id="pv_ppy">
+              <option value="12" selected>每月</option>
+              <option value="4">每季</option>
+              <option value="1">每年</option>
+            </select>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-title"><i data-lucide="calculator"></i>計算結果</div>
+          <div class="result-panel">
+            <div class="result-label">現在應一次性投入 PV</div>
+            <div class="result-big" id="pv_result">NT$0</div>
+            <div class="result-grid">
+              <div class="result-item"><div class="val" id="pv_discount">NT$0</div><div class="lbl">折現差額（FV − PV）</div></div>
+              <div class="result-item"><div class="val positive" id="pv_factor">0.000</div><div class="lbl">現值因數 1/(1+r)^n</div></div>
+            </div>
+          </div>
+          <div class="chart-box chart-box-sm" id="chart_pv"></div>
+          <div class="formula-box">
+            <strong>PV 公式：</strong><br>
+            <code>PV = FV / (1+r)^n − PMT×[1 − (1+r)^−n] / r</code><br>
+            現值就是「未來金額在今天的價值」，利率越高、期限越長，現值越低。
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 面板 4：PMT 每期付款 ============ -->
+    <section class="tab-panel" id="panel-pmt">
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-title"><i data-lucide="calendar-check"></i>PMT 每期付款計算</div>
+          <p class="card-desc">兩種情境：儲蓄目標（求每期應投入）或貸款攤還（求每期應繳）。</p>
+          <div class="goal-chips" id="pmtModeChips">
+            <button class="goal-chip active" data-mode="save">
+              <i data-lucide="piggy-bank"></i>儲蓄目標（求投入）
+            </button>
+            <button class="goal-chip" data-mode="loan">
+              <i data-lucide="landmark"></i>貸款攤還（求月付）
+            </button>
+          </div>
+
+          <div id="pmt_save_fields">
+            <div class="form-group">
+              <label>目標終值 FV</label>
+              <div class="input-wrap"><input type="number" id="pmt_fv" value="2000000" min="0" placeholder="目標終值金額"></div>
+            </div>
+            <div class="form-group">
+              <label>現有投入 PV（可為 0）</label>
+              <div class="input-wrap"><input type="number" id="pmt_pv_save" value="100000" min="0" placeholder="現有投入，可為 0"></div>
+            </div>
+          </div>
+          <div id="pmt_loan_fields" style="display:none;">
+            <div class="form-group">
+              <label>貸款本金 PV</label>
+              <div class="input-wrap"><input type="number" id="pmt_pv_loan" value="3000000" min="0" placeholder="貸款本金金額"></div>
+            </div>
+            <div class="form-group">
+              <label>貸款年利率：<span class="range-value" id="pmt_loan_rate_val">2.5%</span></label>
+              <input type="range" id="pmt_loan_rate" min="0" max="10" step="0.1" value="2.5">
+            </div>
+          </div>
+
+          <div class="form-row" id="pmt_save_rate_row">
+            <div class="form-group">
+              <label>年利率：<span class="range-value" id="pmt_rate_val">5.0%</span></label>
+              <input type="range" id="pmt_rate" min="0" max="20" step="0.5" value="5">
+            </div>
+            <div class="form-group">
+              <label>期數：<span class="range-value" id="pmt_years_val">10 年</span></label>
+              <input type="range" id="pmt_years" min="1" max="40" step="1" value="10">
+            </div>
+          </div>
+          <div class="form-row" id="pmt_loan_years_row" style="display:none;">
+            <div class="form-group">
+              <label>貸款期限：<span class="range-value" id="pmt_loan_years_val">20 年</span></label>
+              <input type="range" id="pmt_loan_years" min="1" max="30" step="1" value="20">
+            </div>
+            <div class="form-group">
+              <label>還款頻率</label>
+              <select id="pmt_ppy"><option value="12" selected>每月</option><option value="4">每季</option></select>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title"><i data-lucide="calculator"></i>計算結果</div>
+          <div class="result-panel">
+            <div class="result-label" id="pmt_result_label">每期應投入 PMT</div>
+            <div class="result-big" id="pmt_result">NT$0</div>
+            <div class="result-grid">
+              <div class="result-item"><div class="val" id="pmt_total">NT$0</div><div class="lbl" id="pmt_total_lbl">累計投入總額</div></div>
+              <div class="result-item"><div class="val positive" id="pmt_interest">NT$0</div><div class="lbl" id="pmt_interest_lbl">累計利息</div></div>
+            </div>
+          </div>
+          <div class="chart-box chart-box-sm" id="chart_pmt"></div>
+          <div class="table-wrap" id="pmt_amort_wrap" style="display:none;max-height:260px;overflow-y:auto;">
+            <table>
+              <thead><tr><th>期數</th><th>每期繳款</th><th>本金</th><th>利息</th><th>剩餘餘額</th></tr></thead>
+              <tbody id="pmt_amort_body"></tbody>
+            </table>
+          </div>
+          <div class="formula-box">
+            <strong>PMT 公式：</strong><br>
+            儲蓄：<code>PMT = FV×r / [(1+r)^n − 1]</code>（另加 PV 部分）<br>
+            貸款：<code>PMT = PV×r / [1 − (1+r)^−n]</code>（本息平均攤還）
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ 面板 5：公式說明 ============ -->
+    <section class="tab-panel" id="panel-formula">
+      <div class="card">
+        <div class="card-title"><i data-lucide="sigma"></i>貨幣時間價值公式總覽</div>
+        <p class="card-desc">本站所有計算皆基於貨幣時間價值（Time Value of Money）三大核心函數。</p>
+
+        <div class="grid-2" style="margin-top:8px;">
+          <div class="formula-box" style="margin-top:0;">
+            <strong style="color:var(--accent);font-size:1.05rem;">FV — 終值（Future Value）</strong><br>
+            現在的一筆錢，在複利效果下未來會增值多少。<br><br>
+            <code>FV = PV × (1 + r)^n</code>（單筆）<br>
+            <code>FV = PMT × [(1+r)^n − 1] / r</code>（年金）<br><br>
+            <strong>應用：</strong>預估退休時可累積多少資產、定期定額長期報酬。
+          </div>
+          <div class="formula-box" style="margin-top:0;">
+            <strong style="color:var(--accent2);font-size:1.05rem;">PV — 現值（Present Value）</strong><br>
+            未來的一筆錢，折算到今天價值多少。<br><br>
+            <code>PV = FV / (1 + r)^n</code>（單筆）<br>
+            <code>PV = PMT × [1 − (1+r)^−n] / r</code>（年金）<br><br>
+            <strong>應用：</strong>評估投資標的合理價格、保險給付現值比較。
+          </div>
+          <div class="formula-box">
+            <strong style="color:var(--accent);font-size:1.05rem;">PMT — 每期付款（Payment）</strong><br>
+            為達成某目標（或償還某貸款），每期應付出的金額。<br><br>
+            <code>PMT = FV × r / [(1+r)^n − 1]</code>（儲蓄目標）<br>
+            <code>PMT = PV × r / [1 − (1+r)^−n]</code>（貸款攤還）<br><br>
+            <strong>應用：</strong>房貸月付金計算、定期定額應投入金額。
+          </div>
+          <div class="formula-box">
+            <strong style="color:var(--accent2);font-size:1.05rem;">符號定義</strong><br><br>
+            <code>PV</code> 現值（Present Value）— 現在的金額<br>
+            <code>FV</code> 終值（Future Value）— 未來的金額<br>
+            <code>PMT</code> 每期付款（Payment）— 固定期間投入/繳納<br>
+            <code>r</code> 每期利率 = 年利率 ÷ 每年期數<br>
+            <code>n</code> 總期數 = 年數 × 每年期數<br><br>
+            本站預設每月複利（每年 12 期）。
+          </div>
+        </div>
+
+        <div class="formula-box" style="margin-top:20px;">
+          <strong>使用提醒：</strong>本工具計算結果僅供參考，實際投資報酬會因市場波動、費用、稅賦而不同。更高的預期報酬通常伴隨更高風險，建議依個人風險承受度配置資產，並定期（至少每年）檢視目標進度。
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- 頁尾 -->
+  <footer class="footer">
+    <div class="container">
+      <p class="disclaimer">免責聲明：本網站提供之計算結果僅供教育與參考用途，不構成任何投資建議。實際金融商品之報酬與風險請諮詢專業理財顧問。</p>
+      <p>理財目標規劃師 · PV / FV / PMT · 可部署於 Cloudflare Pages</p>
+    </div>
+  </footer>
+
+  <script src="assets/js/finance.js"></script>
+  <script src="assets/js/app.js"></script>
+</body>
+</html>
